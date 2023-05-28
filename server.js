@@ -1,19 +1,20 @@
 const express = require("express");
 const multer = require("multer");
-const fsPromises = require("fs").promises; // for reading the file
-const fs = require("fs"); // for unlinkSync function
+const fsPromises = require("fs").promises;
+const fs = require("fs");
 const path = require("path");
 const { createWorker } = require("tesseract.js");
 const PDFImage = require("pdf-image").PDFImage;
-const { PDFDocument } = require("pdf-lib"); // Importing PDFDocument
+const { PDFDocument } = require("pdf-lib");
 
 const app = express();
-const upload = multer({ dest: "uploads/" });
+const upload = multer({ dest: "/tmp/" }); // Change the destination to /tmp
 
-app.set("view engine", "ejs"); // set EJS as the templating engine
+app.set("view engine", "ejs");
 app.use(express.static("public"));
 
-app.post("/upload", upload.single("file"), async (req, res) => {
+app.post("/api/upload", upload.single("file"), async (req, res) => {
+  // Change the route to /api/upload
   const worker = await createWorker();
   const url =
     "https://kbopub.economie.fgov.be/kbopub/toonondernemingps.html?ondernemingsnummer=";
@@ -31,11 +32,9 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       },
     });
 
-    // Reading the file and loading it as a PDFDocument
     const pdfBytes = await fsPromises.readFile(pdfPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
 
-    // Get the total number of pages
     const totalPages = pdfDoc.getPages().length;
 
     let results = [];
@@ -59,12 +58,11 @@ app.post("/upload", upload.single("file"), async (req, res) => {
         }
       }
 
-      fs.unlinkSync(imagePath); // using fs.unlinkSync
+      fs.unlinkSync(imagePath);
     }
 
     await worker.terminate();
 
-    // render the results view and pass the results to it
     res.render("results", { results: results });
   } catch (error) {
     console.error(error);
@@ -72,4 +70,4 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server started on port 3000"));
+module.exports = app; // Instead of listening to a port, export the app
