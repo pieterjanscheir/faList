@@ -13,7 +13,7 @@ const upload = multer({ dest: "/tmp/" }); // Change the destination to /tmp
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
-app.post("/api/upload", upload.single("file"), async (req, res) => {
+app.post("/api/upload.js", upload.single("file"), async (req, res) => {
   // Change the route to /api/upload
   const worker = await createWorker();
   const url =
